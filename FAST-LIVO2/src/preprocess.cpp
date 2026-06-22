@@ -1,4 +1,4 @@
-/* 
+/*
 This file is part of FAST-LIVO2: Fast, Direct LiDAR-Inertial-Visual Odometry.
 
 Developer: Chunran Zheng <zhengcr@connect.hku.hk>
@@ -139,7 +139,8 @@ void Preprocess::avia_handler(const livox_ros_driver::CustomMsg::ConstPtr &msg)
     double t0 = omp_get_wtime();
     for (int j = 0; j < N_SCANS; j++)
     {
-      if (pl_buff[j].size() <= 5) continue;
+      if (pl_buff[j].size() <= 5)
+        continue;
       pcl::PointCloud<PointType> &pl = pl_buff[j];
       plsize = pl.size();
       vector<orgtype> &types = typess[j];
@@ -216,11 +217,13 @@ void Preprocess::l515_handler(const sensor_msgs::PointCloud2::ConstPtr &msg)
   // printf("Pt size = %d, N_SCANS = %d\r\n", plsize, N_SCANS);
   for (int i = 0; i < pl_orig.points.size(); i++)
   {
-    if (i % point_filter_num != 0) continue;
+    if (i % point_filter_num != 0)
+      continue;
 
     double range = pl_orig.points[i].x * pl_orig.points[i].x + pl_orig.points[i].y * pl_orig.points[i].y + pl_orig.points[i].z * pl_orig.points[i].z;
 
-    if (range < blind_sqr) continue;
+    if (range < blind_sqr)
+      continue;
 
     Eigen::Vector3d pt_vec;
     PointType added_pt;
@@ -262,7 +265,8 @@ void Preprocess::oust64_handler(const sensor_msgs::PointCloud2::ConstPtr &msg)
     {
       double range =
           pl_orig.points[i].x * pl_orig.points[i].x + pl_orig.points[i].y * pl_orig.points[i].y + pl_orig.points[i].z * pl_orig.points[i].z;
-      if (range < blind_sqr) continue;
+      if (range < blind_sqr)
+        continue;
       Eigen::Vector3d pt_vec;
       PointType added_pt;
       added_pt.x = pl_orig.points[i].x;
@@ -273,11 +277,16 @@ void Preprocess::oust64_handler(const sensor_msgs::PointCloud2::ConstPtr &msg)
       added_pt.normal_y = 0;
       added_pt.normal_z = 0;
       double yaw_angle = atan2(added_pt.y, added_pt.x) * 57.3;
-      if (yaw_angle >= 180.0) yaw_angle -= 360.0;
-      if (yaw_angle <= -180.0) yaw_angle += 360.0;
+      if (yaw_angle >= 180.0)
+        yaw_angle -= 360.0;
+      if (yaw_angle <= -180.0)
+        yaw_angle += 360.0;
 
       added_pt.curvature = pl_orig.points[i].t / 1e6;
-      if (pl_orig.points[i].ring < N_SCANS) { pl_buff[pl_orig.points[i].ring].push_back(added_pt); }
+      if (pl_orig.points[i].ring < N_SCANS)
+      {
+        pl_buff[pl_orig.points[i].ring].push_back(added_pt);
+      }
     }
 
     for (int j = 0; j < N_SCANS; j++)
@@ -307,12 +316,14 @@ void Preprocess::oust64_handler(const sensor_msgs::PointCloud2::ConstPtr &msg)
     // printf("Pt size = %d, N_SCANS = %d\r\n", plsize, N_SCANS);
     for (int i = 0; i < pl_orig.points.size(); i++)
     {
-      if (i % point_filter_num != 0) continue;
+      if (i % point_filter_num != 0)
+        continue;
 
       double range =
           pl_orig.points[i].x * pl_orig.points[i].x + pl_orig.points[i].y * pl_orig.points[i].y + pl_orig.points[i].z * pl_orig.points[i].z;
 
-      if (range < blind_sqr) continue;
+      if (range < blind_sqr)
+        continue;
 
       Eigen::Vector3d pt_vec;
       PointType added_pt;
@@ -324,8 +335,10 @@ void Preprocess::oust64_handler(const sensor_msgs::PointCloud2::ConstPtr &msg)
       added_pt.normal_y = 0;
       added_pt.normal_z = 0;
       double yaw_angle = atan2(added_pt.y, added_pt.x) * 57.3;
-      if (yaw_angle >= 180.0) yaw_angle -= 360.0;
-      if (yaw_angle <= -180.0) yaw_angle += 360.0;
+      if (yaw_angle >= 180.0)
+        yaw_angle -= 360.0;
+      if (yaw_angle <= -180.0)
+        yaw_angle += 360.0;
 
       added_pt.curvature = pl_orig.points[i].t / 1e6;
 
@@ -333,9 +346,8 @@ void Preprocess::oust64_handler(const sensor_msgs::PointCloud2::ConstPtr &msg)
 
       pl_surf.points.push_back(added_pt);
     }
-    std::sort(pl_surf.points.begin(), pl_surf.points.end(), [](const PointType &a, const PointType &b) {
-      return a.curvature < b.curvature;
-    });
+    std::sort(pl_surf.points.begin(), pl_surf.points.end(), [](const PointType &a, const PointType &b)
+              { return a.curvature < b.curvature; });
   }
   // pub_func(pl_surf, pub_full, msg->header.stamp);
   // pub_func(pl_surf, pub_corn, msg->header.stamp);
@@ -352,7 +364,8 @@ void Preprocess::velodyne_handler(const sensor_msgs::PointCloud2::ConstPtr &msg)
   pcl::PointCloud<velodyne_ros::Point> pl_orig;
   pcl::fromROSMsg(*msg, pl_orig);
   int plsize = pl_orig.points.size();
-  if (plsize == 0) return;
+  if (plsize == 0)
+    return;
   pl_surf.reserve(plsize);
 
   bool is_first[MAX_LINE_NUM];
@@ -361,7 +374,10 @@ void Preprocess::velodyne_handler(const sensor_msgs::PointCloud2::ConstPtr &msg)
   float yaw_last[MAX_LINE_NUM] = {0.0};  // yaw of last scan point
   float time_last[MAX_LINE_NUM] = {0.0}; // last offset time
 
-  if (pl_orig.points[plsize - 1].time > 0) { given_offset_time = true; }
+  if (pl_orig.points[plsize - 1].time > 0)
+  {
+    given_offset_time = true;
+  }
   else
   {
     given_offset_time = false;
@@ -394,7 +410,8 @@ void Preprocess::velodyne_handler(const sensor_msgs::PointCloud2::ConstPtr &msg)
       added_pt.normal_y = 0;
       added_pt.normal_z = 0;
       int layer = pl_orig.points[i].ring;
-      if (layer >= N_SCANS) continue;
+      if (layer >= N_SCANS)
+        continue;
       added_pt.x = pl_orig.points[i].x;
       added_pt.y = pl_orig.points[i].y;
       added_pt.z = pl_orig.points[i].z;
@@ -415,10 +432,17 @@ void Preprocess::velodyne_handler(const sensor_msgs::PointCloud2::ConstPtr &msg)
           continue;
         }
 
-        if (yaw_angle <= yaw_fp[layer]) { added_pt.curvature = (yaw_fp[layer] - yaw_angle) / omega_l; }
-        else { added_pt.curvature = (yaw_fp[layer] - yaw_angle + 360.0) / omega_l; }
+        if (yaw_angle <= yaw_fp[layer])
+        {
+          added_pt.curvature = (yaw_fp[layer] - yaw_angle) / omega_l;
+        }
+        else
+        {
+          added_pt.curvature = (yaw_fp[layer] - yaw_angle + 360.0) / omega_l;
+        }
 
-        if (added_pt.curvature < time_last[layer]) added_pt.curvature += 360.0 / omega_l;
+        if (added_pt.curvature < time_last[layer])
+          added_pt.curvature += 360.0 / omega_l;
 
         yaw_last[layer] = yaw_angle;
         time_last[layer] = added_pt.curvature;
@@ -431,7 +455,8 @@ void Preprocess::velodyne_handler(const sensor_msgs::PointCloud2::ConstPtr &msg)
     {
       PointCloudXYZI &pl = pl_buff[j];
       int linesize = pl.size();
-      if (linesize < 2) continue;
+      if (linesize < 2)
+        continue;
       vector<orgtype> &types = typess[j];
       types.clear();
       types.resize(linesize);
@@ -481,10 +506,17 @@ void Preprocess::velodyne_handler(const sensor_msgs::PointCloud2::ConstPtr &msg)
         }
 
         // compute offset time
-        if (yaw_angle <= yaw_fp[layer]) { added_pt.curvature = (yaw_fp[layer] - yaw_angle) / omega_l; }
-        else { added_pt.curvature = (yaw_fp[layer] - yaw_angle + 360.0) / omega_l; }
+        if (yaw_angle <= yaw_fp[layer])
+        {
+          added_pt.curvature = (yaw_fp[layer] - yaw_angle) / omega_l;
+        }
+        else
+        {
+          added_pt.curvature = (yaw_fp[layer] - yaw_angle + 360.0) / omega_l;
+        }
 
-        if (added_pt.curvature < time_last[layer]) added_pt.curvature += 360.0 / omega_l;
+        if (added_pt.curvature < time_last[layer])
+          added_pt.curvature += 360.0 / omega_l;
 
         // added_pt.curvature = pl_orig.points[i].t;
 
@@ -546,14 +578,14 @@ void Preprocess::Pandar128_handler(const sensor_msgs::PointCloud2::ConstPtr &msg
   }
 
   // define a lambda function for the comparison
-  auto comparePoints = [](const PointType& a, const PointType& b) -> bool
+  auto comparePoints = [](const PointType &a, const PointType &b) -> bool
   {
     return a.curvature < b.curvature;
   };
-  
+
   // sort the points using the comparison function
   std::sort(pl_surf.points.begin(), pl_surf.points.end(), comparePoints);
-  
+
   // cout << GREEN << "pl_surf.points[0].timestamp: " << pl_surf.points[0].curvature << RESET << endl;
   // cout << GREEN << "pl_surf.points[1000].timestamp: " << pl_surf.points[1000].curvature << RESET << endl;
   // cout << GREEN << "pl_surf.points[5000].timestamp: " << pl_surf.points[5000].curvature << RESET << endl;
@@ -580,7 +612,10 @@ void Preprocess::xt32_handler(const sensor_msgs::PointCloud2::ConstPtr &msg)
   float yaw_last[MAX_LINE_NUM] = {0.0};  // yaw of last scan point
   float time_last[MAX_LINE_NUM] = {0.0}; // last offset time
 
-  if (pl_orig.points[plsize - 1].timestamp > 0) { given_offset_time = true; }
+  if (pl_orig.points[plsize - 1].timestamp > 0)
+  {
+    given_offset_time = true;
+  }
   else
   {
     given_offset_time = false;
@@ -615,7 +650,8 @@ void Preprocess::xt32_handler(const sensor_msgs::PointCloud2::ConstPtr &msg)
       added_pt.normal_y = 0;
       added_pt.normal_z = 0;
       int layer = pl_orig.points[i].ring;
-      if (layer >= N_SCANS) continue;
+      if (layer >= N_SCANS)
+        continue;
       added_pt.x = pl_orig.points[i].x;
       added_pt.y = pl_orig.points[i].y;
       added_pt.z = pl_orig.points[i].z;
@@ -636,10 +672,17 @@ void Preprocess::xt32_handler(const sensor_msgs::PointCloud2::ConstPtr &msg)
           continue;
         }
 
-        if (yaw_angle <= yaw_fp[layer]) { added_pt.curvature = (yaw_fp[layer] - yaw_angle) / omega_l; }
-        else { added_pt.curvature = (yaw_fp[layer] - yaw_angle + 360.0) / omega_l; }
+        if (yaw_angle <= yaw_fp[layer])
+        {
+          added_pt.curvature = (yaw_fp[layer] - yaw_angle) / omega_l;
+        }
+        else
+        {
+          added_pt.curvature = (yaw_fp[layer] - yaw_angle + 360.0) / omega_l;
+        }
 
-        if (added_pt.curvature < time_last[layer]) added_pt.curvature += 360.0 / omega_l;
+        if (added_pt.curvature < time_last[layer])
+          added_pt.curvature += 360.0 / omega_l;
 
         yaw_last[layer] = yaw_angle;
         time_last[layer] = added_pt.curvature;
@@ -652,7 +695,8 @@ void Preprocess::xt32_handler(const sensor_msgs::PointCloud2::ConstPtr &msg)
     {
       PointCloudXYZI &pl = pl_buff[j];
       int linesize = pl.size();
-      if (linesize < 2) continue;
+      if (linesize < 2)
+        continue;
       vector<orgtype> &types = typess[j];
       types.clear();
       types.resize(linesize);
@@ -719,13 +763,15 @@ void Preprocess::robosense_handler(const sensor_msgs::PointCloud2::ConstPtr &msg
   double time_head = pl_orig.points[0].timestamp;
   for (int i = 0; i < plsize; ++i)
   {
-    if (i % point_filter_num != 0) continue;
+    if (i % point_filter_num != 0)
+      continue;
 
-    const auto& pt = pl_orig.points[i];
+    const auto &pt = pl_orig.points[i];
     const double x = pt.x, y = pt.y, z = pt.z;
     const double dist_sqr = x * x + y * y + z * z;
     const bool is_valid = (dist_sqr >= blind_sqr) && !std::isnan(x) && !std::isnan(y) && !std::isnan(z);
-    if (!is_valid) continue;
+    if (!is_valid)
+      continue;
 
     PointType added_pt;
     added_pt.normal_x = 0;
@@ -738,9 +784,8 @@ void Preprocess::robosense_handler(const sensor_msgs::PointCloud2::ConstPtr &msg
     added_pt.curvature = (pt.timestamp - time_head) * 1000.0;
     pl_surf.points.push_back(added_pt);
   }
-  std::sort(pl_surf.points.begin(), pl_surf.points.end(), [](const PointType &a, const PointType &b) {
-    return a.curvature < b.curvature;
-  });
+  std::sort(pl_surf.points.begin(), pl_surf.points.end(), [](const PointType &a, const PointType &b)
+            { return a.curvature < b.curvature; });
 }
 
 void Preprocess::give_feature(pcl::PointCloud<PointType> &pl, vector<orgtype> &types)
@@ -773,7 +818,10 @@ void Preprocess::give_feature(pcl::PointCloud<PointType> &pl, vector<orgtype> &t
 
   for (uint i = head; i < plsize2; i++)
   {
-    if (types[i].range < blind_sqr) { continue; }
+    if (types[i].range < blind_sqr)
+    {
+      continue;
+    }
 
     i2 = i;
 
@@ -783,16 +831,28 @@ void Preprocess::give_feature(pcl::PointCloud<PointType> &pl, vector<orgtype> &t
     {
       for (uint j = i; j <= i_nex; j++)
       {
-        if (j != i && j != i_nex) { types[j].ftype = Real_Plane; }
-        else { types[j].ftype = Poss_Plane; }
+        if (j != i && j != i_nex)
+        {
+          types[j].ftype = Real_Plane;
+        }
+        else
+        {
+          types[j].ftype = Poss_Plane;
+        }
       }
 
       // if(last_state==1 && fabs(last_direct.sum())>0.5)
       if (last_state == 1 && last_direct.norm() > 0.1)
       {
         double mod = last_direct.transpose() * curr_direct;
-        if (mod > -0.707 && mod < 0.707) { types[i].ftype = Edge_Plane; }
-        else { types[i].ftype = Real_Plane; }
+        if (mod > -0.707 && mod < 0.707)
+        {
+          types[i].ftype = Edge_Plane;
+        }
+        else
+        {
+          types[i].ftype = Real_Plane;
+        }
       }
 
       i = i_nex - 1;
@@ -858,9 +918,15 @@ void Preprocess::give_feature(pcl::PointCloud<PointType> &pl, vector<orgtype> &t
   plsize2 = plsize > 3 ? plsize - 3 : 0;
   for (uint i = head + 3; i < plsize2; i++)
   {
-    if (types[i].range < blind_sqr || types[i].ftype >= Real_Plane) { continue; }
+    if (types[i].range < blind_sqr || types[i].ftype >= Real_Plane)
+    {
+      continue;
+    }
 
-    if (types[i - 1].dista < 1e-16 || types[i].dista < 1e-16) { continue; }
+    if (types[i - 1].dista < 1e-16 || types[i].dista < 1e-16)
+    {
+      continue;
+    }
 
     Eigen::Vector3d vec_a(pl[i].x, pl[i].y, pl[i].z);
     Eigen::Vector3d vecs[2];
@@ -868,12 +934,21 @@ void Preprocess::give_feature(pcl::PointCloud<PointType> &pl, vector<orgtype> &t
     for (int j = 0; j < 2; j++)
     {
       int m = -1;
-      if (j == 1) { m = 1; }
+      if (j == 1)
+      {
+        m = 1;
+      }
 
       if (types[i + m].range < blind_sqr)
       {
-        if (types[i].range > inf_bound) { types[i].edj[j] = Nr_inf; }
-        else { types[i].edj[j] = Nr_blind; }
+        if (types[i].range > inf_bound)
+        {
+          types[i].edj[j] = Nr_inf;
+        }
+        else
+        {
+          types[i].edj[j] = Nr_blind;
+        }
         continue;
       }
 
@@ -881,8 +956,14 @@ void Preprocess::give_feature(pcl::PointCloud<PointType> &pl, vector<orgtype> &t
       vecs[j] = vecs[j] - vec_a;
 
       types[i].angle[j] = vec_a.dot(vecs[j]) / vec_a.norm() / vecs[j].norm();
-      if (types[i].angle[j] < jump_up_limit) { types[i].edj[j] = Nr_180; }
-      else if (types[i].angle[j] > jump_down_limit) { types[i].edj[j] = Nr_zero; }
+      if (types[i].angle[j] < jump_up_limit)
+      {
+        types[i].edj[j] = Nr_180;
+      }
+      else if (types[i].angle[j] > jump_down_limit)
+      {
+        types[i].edj[j] = Nr_zero;
+      }
     }
 
     types[i].intersect = vecs[Prev].dot(vecs[Next]) / vecs[Prev].norm() / vecs[Next].norm();
@@ -890,27 +971,42 @@ void Preprocess::give_feature(pcl::PointCloud<PointType> &pl, vector<orgtype> &t
     {
       if (types[i].intersect > cos160)
       {
-        if (edge_jump_judge(pl, types, i, Prev)) { types[i].ftype = Edge_Jump; }
+        if (edge_jump_judge(pl, types, i, Prev))
+        {
+          types[i].ftype = Edge_Jump;
+        }
       }
     }
     else if (types[i].edj[Prev] == Nr_zero && types[i].edj[Next] == Nr_nor && types[i - 1].dista > 0.0225 && types[i - 1].dista > 4 * types[i].dista)
     {
       if (types[i].intersect > cos160)
       {
-        if (edge_jump_judge(pl, types, i, Next)) { types[i].ftype = Edge_Jump; }
+        if (edge_jump_judge(pl, types, i, Next))
+        {
+          types[i].ftype = Edge_Jump;
+        }
       }
     }
     else if (types[i].edj[Prev] == Nr_nor && types[i].edj[Next] == Nr_inf)
     {
-      if (edge_jump_judge(pl, types, i, Prev)) { types[i].ftype = Edge_Jump; }
+      if (edge_jump_judge(pl, types, i, Prev))
+      {
+        types[i].ftype = Edge_Jump;
+      }
     }
     else if (types[i].edj[Prev] == Nr_inf && types[i].edj[Next] == Nr_nor)
     {
-      if (edge_jump_judge(pl, types, i, Next)) { types[i].ftype = Edge_Jump; }
+      if (edge_jump_judge(pl, types, i, Next))
+      {
+        types[i].ftype = Edge_Jump;
+      }
     }
     else if (types[i].edj[Prev] > Nr_nor && types[i].edj[Next] > Nr_nor)
     {
-      if (types[i].ftype == Nor) { types[i].ftype = Wire; }
+      if (types[i].ftype == Nor)
+      {
+        types[i].ftype = Wire;
+      }
     }
   }
 
@@ -918,19 +1014,37 @@ void Preprocess::give_feature(pcl::PointCloud<PointType> &pl, vector<orgtype> &t
   double ratio;
   for (uint i = head + 1; i < plsize2; i++)
   {
-    if (types[i].range < blind_sqr || types[i - 1].range < blind_sqr || types[i + 1].range < blind_sqr) { continue; }
+    if (types[i].range < blind_sqr || types[i - 1].range < blind_sqr || types[i + 1].range < blind_sqr)
+    {
+      continue;
+    }
 
-    if (types[i - 1].dista < 1e-8 || types[i].dista < 1e-8) { continue; }
+    if (types[i - 1].dista < 1e-8 || types[i].dista < 1e-8)
+    {
+      continue;
+    }
 
     if (types[i].ftype == Nor)
     {
-      if (types[i - 1].dista > types[i].dista) { ratio = types[i - 1].dista / types[i].dista; }
-      else { ratio = types[i].dista / types[i - 1].dista; }
+      if (types[i - 1].dista > types[i].dista)
+      {
+        ratio = types[i - 1].dista / types[i].dista;
+      }
+      else
+      {
+        ratio = types[i].dista / types[i - 1].dista;
+      }
 
       if (types[i].intersect < smallp_intersect && ratio < smallp_ratio)
       {
-        if (types[i - 1].ftype == Nor) { types[i - 1].ftype = Real_Plane; }
-        if (types[i + 1].ftype == Nor) { types[i + 1].ftype = Real_Plane; }
+        if (types[i - 1].ftype == Nor)
+        {
+          types[i - 1].ftype = Real_Plane;
+        }
+        if (types[i + 1].ftype == Nor)
+        {
+          types[i + 1].ftype = Real_Plane;
+        }
         types[i].ftype = Real_Plane;
       }
     }
@@ -941,7 +1055,10 @@ void Preprocess::give_feature(pcl::PointCloud<PointType> &pl, vector<orgtype> &t
   {
     if (types[j].ftype == Poss_Plane || types[j].ftype == Real_Plane)
     {
-      if (last_surface == -1) { last_surface = j; }
+      if (last_surface == -1)
+      {
+        last_surface = j;
+      }
 
       if (j == uint(last_surface + point_filter_num - 1))
       {
@@ -957,7 +1074,10 @@ void Preprocess::give_feature(pcl::PointCloud<PointType> &pl, vector<orgtype> &t
     }
     else
     {
-      if (types[j].ftype == Edge_Jump || types[j].ftype == Edge_Plane) { pl_corn.push_back(pl[j]); }
+      if (types[j].ftype == Edge_Jump || types[j].ftype == Edge_Plane)
+      {
+        pl_corn.push_back(pl[j]);
+      }
       if (last_surface != -1)
       {
         PointType ap;
@@ -1011,7 +1131,8 @@ int Preprocess::plane_judge(const PointCloudXYZI &pl, vector<orgtype> &types, ui
 
   for (;;)
   {
-    if ((i_cur >= pl.size()) || (i_nex >= pl.size())) break;
+    if ((i_cur >= pl.size()) || (i_nex >= pl.size()))
+      break;
 
     if (types[i_nex].range < blind_sqr)
     {
@@ -1022,7 +1143,10 @@ int Preprocess::plane_judge(const PointCloudXYZI &pl, vector<orgtype> &types, ui
     vy = pl[i_nex].y - pl[i_cur].y;
     vz = pl[i_nex].z - pl[i_cur].z;
     two_dis = vx * vx + vy * vy + vz * vz;
-    if (two_dis >= group_dis) { break; }
+    if (two_dis >= group_dis)
+    {
+      break;
+    }
     disarr.push_back(types[i_nex].dista);
     i_nex++;
   }
@@ -1031,7 +1155,8 @@ int Preprocess::plane_judge(const PointCloudXYZI &pl, vector<orgtype> &types, ui
   double v1[3], v2[3];
   for (uint j = i_cur + 1; j < i_nex; j++)
   {
-    if ((j >= pl.size()) || (i_cur >= pl.size())) break;
+    if ((j >= pl.size()) || (i_cur >= pl.size()))
+      break;
     v1[0] = pl[j].x - pl[i_cur].x;
     v1[1] = pl[j].y - pl[i_cur].y;
     v1[2] = pl[j].z - pl[i_cur].z;
@@ -1041,7 +1166,10 @@ int Preprocess::plane_judge(const PointCloudXYZI &pl, vector<orgtype> &types, ui
     v2[2] = v1[0] * vy - vx * v1[1];
 
     double lw = v2[0] * v2[0] + v2[1] * v2[1] + v2[2] * v2[2];
-    if (lw > leng_wid) { leng_wid = lw; }
+    if (lw > leng_wid)
+    {
+      leng_wid = lw;
+    }
   }
 
   if ((two_dis * two_dis / leng_wid) < p2l_ratio)
@@ -1100,11 +1228,17 @@ bool Preprocess::edge_jump_judge(const PointCloudXYZI &pl, vector<orgtype> &type
 {
   if (nor_dir == 0)
   {
-    if (types[i - 1].range < blind_sqr || types[i - 2].range < blind_sqr) { return false; }
+    if (types[i - 1].range < blind_sqr || types[i - 2].range < blind_sqr)
+    {
+      return false;
+    }
   }
   else if (nor_dir == 1)
   {
-    if (types[i + 1].range < blind_sqr || types[i + 2].range < blind_sqr) { return false; }
+    if (types[i + 1].range < blind_sqr || types[i + 2].range < blind_sqr)
+    {
+      return false;
+    }
   }
   double d1 = types[i + nor_dir - 1].dista;
   double d2 = types[i + 3 * nor_dir - 2].dista;
@@ -1120,7 +1254,10 @@ bool Preprocess::edge_jump_judge(const PointCloudXYZI &pl, vector<orgtype> &type
   d1 = sqrt(d1);
   d2 = sqrt(d2);
 
-  if (d1 > edgea * d2 || (d1 - d2) > edgeb) { return false; }
+  if (d1 > edgea * d2 || (d1 - d2) > edgeb)
+  {
+    return false;
+  }
 
   return true;
 }
