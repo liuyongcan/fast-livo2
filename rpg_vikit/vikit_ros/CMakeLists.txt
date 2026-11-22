@@ -1,52 +1,76 @@
-SET(PROJECT_NAME vikit_ros)
-PROJECT(${PROJECT_NAME})
-CMAKE_MINIMUM_REQUIRED (VERSION 2.8.3)
-SET(CMAKE_BUILD_TYPE Release) # Release, RelWithDebInfo
-SET(CMAKE_VERBOSE_MAKEFILE OFF)
+cmake_minimum_required(VERSION 3.5)
+project(vikit_ros)
 
-# Set build flags
-SET(CMAKE_CXX_FLAGS "-Wall -D_LINUX -D_REENTRANT -march=native -Wno-unused-variable -Wno-unused-but-set-variable -Wno-unknown-pragmas")
-SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS} -O0 -g")
-IF(CMAKE_COMPILER_IS_GNUCC)
-  SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
-ELSE()
-  SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
-ENDIF()
+if(NOT CMAKE_BUILD_TYPE)
+  set(CMAKE_BUILD_TYPE Release)
+endif()
 
-# Add catkin and required ROS packages
-FIND_PACKAGE(catkin REQUIRED COMPONENTS roscpp vikit_common visualization_msgs tf cmake_modules)
-
-# Add plain cmake packages 
-FIND_PACKAGE(OpenCV REQUIRED)
+# Find packages
+find_package(ament_cmake REQUIRED)
+find_package(rclcpp REQUIRED)
+find_package(vikit_common REQUIRED)
+find_package(visualization_msgs REQUIRED)
+find_package(tf2_ros REQUIRED)
+find_package(OpenCV REQUIRED)
 find_package(Eigen3 REQUIRED)
-FIND_PACKAGE(Sophus REQUIRED)
-
-# Include dirs
-INCLUDE_DIRECTORIES(
-  include
-  ${EIGEN3_INCLUDE_DIRS}
-  ${OpenCV_INCLUDE_DIRS}
-  ${Sophus_INCLUDE_DIRS}
-  ${catkin_INCLUDE_DIRS}
+find_package(Sophus REQUIRED)
+find_package(tf2_geometry_msgs REQUIRED)
+set(dependencies
+  Eigen3
+  rclcpp
+  tf2_ros
+  tf2_geometry_msgs
+  vikit_common
+  visualization_msgs
 )
 
-# Describe catkin Project
-catkin_package(
-    DEPENDS EIGEN3 OpenCV Sophus vikit_common
-    CATKIN_DEPENDS roscpp visualization_msgs tf 
-    INCLUDE_DIRS include
-    LIBRARIES ${PROJECT_NAME}
-)
+ament_export_dependencies(${dependencies})
 
-# Set Sourcefiles
-LIST(APPEND SOURCEFILES 
+# Link libraries
+list(APPEND SOURCEFILES 
   src/output_helper.cpp
 )
 
-# Create vikit library
-ADD_LIBRARY(${PROJECT_NAME} SHARED ${SOURCEFILES})
-TARGET_LINK_LIBRARIES(
-  ${PROJECT_NAME}
-  ${OpenCV_LIBS}
-  ${Sophus_LIBRARIES}
-  ${catkin_LIBRARIES})
+add_library(${PROJECT_NAME} SHARED ${SOURCEFILES})
+# Modify target_include_directories to include the project directory directly
+target_include_directories(${PROJECT_NAME} PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  $<INSTALL_INTERFACE:include>
+)
+
+target_link_libraries(${PROJECT_NAME}
+  Eigen3::Eigen
+  rclcpp::rclcpp
+  tf2_ros::tf2_ros
+  vikit_common::vikit_common
+  ${tf2_geometry_msgs_TARGETS}
+  ${visualization_msgs_TARGETS}
+)
+
+ament_target_dependencies(${PROJECT_NAME} ${dependencies})
+
+install(DIRECTORY include/
+  DESTINATION include/${PROJECT_NAME}
+)
+
+# Install library
+install(TARGETS ${PROJECT_NAME}
+  EXPORT ${PROJECT_NAME}
+  ARCHIVE DESTINATION lib
+  LIBRARY DESTINATION lib
+  RUNTIME DESTINATION bin
+  INCLUDES DESTINATION include
+)
+
+# Export the include directory for the project
+set_target_properties(${PROJECT_NAME} PROPERTIES
+  PUBLIC_HEADER "${CMAKE_CURRENT_SOURCE_DIR}/include"
+)
+
+# Ensure the include directory is correctly set for downstream packages
+ament_export_include_directories(include/${PROJECT_NAME})
+ament_export_libraries(${PROJECT_NAME})
+ament_export_dependencies(${dependencies})
+ament_export_targets(${PROJECT_NAME})
+
+ament_package()

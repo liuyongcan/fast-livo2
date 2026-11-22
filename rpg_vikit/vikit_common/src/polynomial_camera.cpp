@@ -2,7 +2,7 @@
  * polynomial_camera.cpp
  *
  *  Created on: January 26, 2023
- *      Author: Chunran Zheng
+ *      Author: xuankuzcr
  */
 
 #include <stdio.h>

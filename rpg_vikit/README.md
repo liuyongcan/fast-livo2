@@ -1,19 +1,31 @@
 ## Vikit for FAST-LIVO2
 
-Vikit (Vision-Kit) is a lightweight and efficient library designed to provide essential camera models, mathematical utilities, and interpolation functions required for the FAST-LIVO2 framework. 
+Vikit (Vision-Kit) is a lightweight and efficient library providing essential camera models, mathematical utilities, and interpolation functions for the FAST-LIVO2 framework. 
 
-📬 For further assistance or inquiries, please feel free to contact Chunran Zheng at zhengcr@connect.hku.hk.
+📬 For further assistance or inquiries, please contact Chunran Zheng at zhengcr@connect.hku.hk.
 
 ### Supported Camera Models
-Vikit offers support for a diverse range of camera models, including:
+Vikit supports the following camera models:
 
 - Pinhole + Radtan
-- Pinhole + Equidistant
+- Pinhole + Equidistant **(with OpenCV-based fisheye distortion correction)**
 - Pinhole + ATAN
 - Pinhole + Polynomial
 - Omni + Polynomial
 
-These models adapt to various camera configurations and distortion characteristics.
+These models accommodate diverse camera configurations and distortion characteristics.
+
+### Project Lineage
+This repository is maintained as a downstream fork with the following lineage:
+1. Original work: [xuankuzcr/rpg_vikit](https://github.com/xuankuzcr/rpg_vikit) by Chunran Zheng.
+2. ROS2-compatible port: [integralrobotics/rpg_vikit](https://github.com/integralrobotics/rpg_vikit).
+
+### Enhancements
+The following key improvements have been implemented:
+- Integrated OpenCV-based fisheye distortion correction into the equidistant camera model (`vikit_common` module).
 
 ### Acknowledgments
-Special thanks to the [rpg_vikit](https://github.com/uzh-rpg/rpg_vikit) from the [UZH-RPG group](https://rpg.ifi.uzh.ch/) for their foundational work and inspiration in the development of this library.
+Special recognition to:
+- [UZH-RPG group](https://rpg.ifi.uzh.ch/) for foundational [rpg_vikit](https://github.com/uzh-rpg/rpg_vikit) research.
+- [Chunran Zheng](https://github.com/xuankuzcr/rpg_vikit) for developing the ROS1-compatible version [xuankuzcr/rpg_vikit](https://github.com/xuankuzcr/rpg_vikit) specifically adapted for FAST-LIVO2.
+- [integralrobotics](https://github.com/integralrobotics) for porting Chunran Zheng's version to ROS2 in their [rpg_vikit implementation](https://github.com/integralrobotics/rpg_vikit).
