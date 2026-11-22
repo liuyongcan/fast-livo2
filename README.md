@@ -10,3 +10,5 @@ $ sudo make install
 
 2、编译fast-livo2
 catkin_make
+
+3、
